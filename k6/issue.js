@@ -1,4 +1,5 @@
 import http from 'k6/http';
+import exec from 'k6/execution';
 import { Counter } from 'k6/metrics';
 
 const BASE = 'http://localhost:8080';
@@ -21,9 +22,10 @@ export const options = {
 };
 
 export function setup() {
+  const testId = (exec.test.options.tags || {}).testid || 'k6';
   const res = http.post(
     `${BASE}/api/coupons`,
-    JSON.stringify({ name: 'k6', totalQuantity: QUANTITY }),
+    JSON.stringify({ name: testId, totalQuantity: QUANTITY }),
     { headers: { 'Content-Type': 'application/json' } },
   );
   return { couponId: res.body };

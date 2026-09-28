@@ -9,6 +9,16 @@ services:
       MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: coupon
 
+  redis:
+    image: redis:7.0.15
+    ports:
+      - "6379:6379"
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.59.0
+    environment:
+      REDIS_ADDR: redis://redis:6379
+
   prometheus:
     image: prom/prometheus:v2.51.2
     ports:

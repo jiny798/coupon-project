@@ -16,26 +16,19 @@ public class Coupon {
 
     private int totalQuantity;
 
-    private int issuedQuantity;
-
     protected Coupon() {
     }
 
     public Coupon(String name, int totalQuantity) {
         this.name = name;
         this.totalQuantity = totalQuantity;
-        this.issuedQuantity = 0;
-    }
-
-    public boolean isSoldOut() {
-        return issuedQuantity >= totalQuantity;
-    }
-
-    public void issue() {
-        issuedQuantity++;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public int getTotalQuantity() {
+        return totalQuantity;
     }
 }

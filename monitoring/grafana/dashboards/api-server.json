@@ -7,11 +7,30 @@
     "to": "now"
   },
   "refresh": "5s",
+  "templating": {
+    "list": [
+      {
+        "name": "testid",
+        "label": "testid",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "influxdb"
+        },
+        "query": "SHOW TAG VALUES FROM \"http_reqs\" WITH KEY = \"testid\"",
+        "definition": "SHOW TAG VALUES FROM \"http_reqs\" WITH KEY = \"testid\"",
+        "refresh": 1,
+        "sort": 2,
+        "multi": false,
+        "includeAll": false
+      }
+    ]
+  },
   "panels": [
     {
       "id": 100,
       "type": "stat",
-      "title": "재고 (최근 쿠폰)",
+      "title": "재고",
       "datasource": {
         "type": "mysql",
         "uid": "mysql"
@@ -49,7 +68,7 @@
             "uid": "mysql"
           },
           "refId": "A",
-          "rawSql": "SELECT total_quantity FROM coupon WHERE id = (SELECT max(id) FROM coupon)",
+          "rawSql": "SELECT total_quantity FROM coupon WHERE id = (SELECT max(id) FROM coupon WHERE name = '$testid')",
           "format": "table",
           "rawQuery": true,
           "editorMode": "code"
@@ -97,7 +116,7 @@
             "uid": "mysql"
           },
           "refId": "A",
-          "rawSql": "SELECT count(*) FROM issued_coupon WHERE coupon_id = (SELECT max(id) FROM coupon)",
+          "rawSql": "SELECT count(*) FROM issued_coupon WHERE coupon_id = (SELECT max(id) FROM coupon WHERE name = '$testid')",
           "format": "table",
           "rawQuery": true,
           "editorMode": "code"
@@ -107,10 +126,10 @@
     {
       "id": 102,
       "type": "stat",
-      "title": "카운트 (issued_quantity)",
+      "title": "k6 매진 (409)",
       "datasource": {
-        "type": "mysql",
-        "uid": "mysql"
+        "type": "influxdb",
+        "uid": "influxdb"
       },
       "gridPos": {
         "x": 8,
@@ -121,7 +140,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "noValue": "-",
+          "noValue": "0",
           "decimals": 0
         },
         "overrides": []
@@ -141,14 +160,13 @@
       "targets": [
         {
           "datasource": {
-            "type": "mysql",
-            "uid": "mysql"
+            "type": "influxdb",
+            "uid": "influxdb"
           },
           "refId": "A",
-          "rawSql": "SELECT issued_quantity FROM coupon WHERE id = (SELECT max(id) FROM coupon)",
-          "format": "table",
+          "query": "SELECT count(\"value\") FROM \"http_req_duration\" WHERE \"testid\" = '$testid' AND \"name\" =~ /issue/ AND \"status\" = '409'",
           "rawQuery": true,
-          "editorMode": "code"
+          "resultFormat": "time_series"
         }
       ]
     },
@@ -193,7 +211,7 @@
             "uid": "influxdb"
           },
           "refId": "A",
-          "query": "SELECT sum(\"value\") FROM \"issued\" WHERE $timeFilter",
+          "query": "SELECT count(\"value\") FROM \"http_req_duration\" WHERE \"testid\" = '$testid' AND \"name\" =~ /issue/ AND \"status\" = '200'",
           "rawQuery": true,
           "resultFormat": "time_series"
         }
@@ -240,7 +258,7 @@
             "uid": "influxdb"
           },
           "refId": "A",
-          "query": "SELECT sum(\"value\") FROM \"http_req_failed\" WHERE $timeFilter",
+          "query": "SELECT count(\"value\") FROM \"http_req_duration\" WHERE \"testid\" = '$testid' AND \"name\" =~ /issue/ AND \"status\" = '0'",
           "rawQuery": true,
           "resultFormat": "time_series"
         }
@@ -264,7 +282,7 @@
         "defaults": {
           "unit": "ms",
           "noValue": "-",
-          "decimals": 0
+          "decimals": 2
         },
         "overrides": []
       },
@@ -287,7 +305,7 @@
             "uid": "influxdb"
           },
           "refId": "A",
-          "query": "SELECT percentile(\"value\", 95) FROM \"http_req_duration\" WHERE $timeFilter AND \"expected_response\" = 'true'",
+          "query": "SELECT percentile(\"value\", 95) FROM \"http_req_duration\" WHERE \"testid\" = '$testid' AND \"name\" =~ /issue/ AND \"expected_response\" = 'true'",
           "rawQuery": true,
           "resultFormat": "time_series"
         }
@@ -863,6 +881,138 @@
           "refId": "A",
           "expr": "sum(rate(jvm_gc_pause_seconds_sum[1m])) by (action)",
           "legendFormat": "{{action}}"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Redis CPU Usage [%]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "rate(redis_cpu_user_seconds_total[1m]) * 100",
+          "legendFormat": "user"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "rate(redis_cpu_sys_seconds_total[1m]) * 100",
+          "legendFormat": "sys"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Redis Memory Usage [MB]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 52,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "redis_memory_used_bytes / (1024*1024)",
+          "legendFormat": "used"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Redis Commands [per s]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 60,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "rate(redis_commands_processed_total[1m])",
+          "legendFormat": "commands"
         }
       ]
     }

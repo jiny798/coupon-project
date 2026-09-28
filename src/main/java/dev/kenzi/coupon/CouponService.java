@@ -8,10 +8,14 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final IssuedCouponRepository issuedCouponRepository;
+    private final CouponIssueRedis couponIssueRedis;
 
-    public CouponService(CouponRepository couponRepository, IssuedCouponRepository issuedCouponRepository) {
+    public CouponService(CouponRepository couponRepository,
+                         IssuedCouponRepository issuedCouponRepository,
+                         CouponIssueRedis couponIssueRedis) {
         this.couponRepository = couponRepository;
         this.issuedCouponRepository = issuedCouponRepository;
+        this.couponIssueRedis = couponIssueRedis;
     }
 
     @Transactional
@@ -21,13 +25,24 @@ public class CouponService {
     }
 
     @Transactional
-    public boolean issue(Long couponId, Long userId) {
-        Coupon coupon = couponRepository.findByIdForUpdate(couponId).orElseThrow();
-        if (coupon.isSoldOut()) {
-            return false;
+    public IssueResult issue(Long couponId, Long userId) {
+        Coupon coupon = couponRepository.findById(couponId).orElseThrow();
+
+        if (!couponIssueRedis.addUser(couponId, userId)) {
+            return IssueResult.DUPLICATE;
         }
-        coupon.issue();
+
+        long order = couponIssueRedis.increment(couponId);
+        if (order > coupon.getTotalQuantity()) {
+            couponIssueRedis.removeUser(couponId, userId);
+            return IssueResult.SOLD_OUT;
+        }
+
         issuedCouponRepository.save(new IssuedCoupon(couponId, userId));
-        return true;
+        return IssueResult.ISSUED;
+    }
+
+    public enum IssueResult {
+        ISSUED, DUPLICATE, SOLD_OUT
     }
 }

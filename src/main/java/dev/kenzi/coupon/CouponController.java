@@ -27,10 +27,11 @@ public class CouponController {
     @PostMapping("/{couponId}/issue")
     public ResponseEntity<String> issue(@PathVariable("couponId") Long couponId,
                                         @RequestParam("userId") Long userId) {
-        if (couponService.issue(couponId, userId)) {
-            return ResponseEntity.ok("issued");
-        }
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("sold out");
+        return switch (couponService.issue(couponId, userId)) {
+            case ISSUED -> ResponseEntity.ok("issued");
+            case DUPLICATE -> ResponseEntity.status(HttpStatus.CONFLICT).body("duplicate");
+            case SOLD_OUT -> ResponseEntity.status(HttpStatus.CONFLICT).body("sold out");
+        };
     }
 
     public record CreateCouponRequest(String name, int totalQuantity) {
