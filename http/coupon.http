@@ -1,0 +1,24 @@
+### create coupon
+POST http://localhost:8080/api/coupons
+Content-Type: application/json
+
+{
+  "name": "test",
+  "totalQuantity": 3
+}
+
+> {%
+    client.global.set("couponId", response.body.toString());
+%}
+
+### issue userId=1
+POST http://localhost:8080/api/coupons/{{couponId}}/issue?userId=1
+
+### issue userId=2
+POST http://localhost:8080/api/coupons/{{couponId}}/issue?userId=2
+
+### issue userId=3
+POST http://localhost:8080/api/coupons/{{couponId}}/issue?userId=3
+
+### issue userId=4
+POST http://localhost:8080/api/coupons/{{couponId}}/issue?userId=4
