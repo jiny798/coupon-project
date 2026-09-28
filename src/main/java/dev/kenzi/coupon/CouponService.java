@@ -22,7 +22,7 @@ public class CouponService {
 
     @Transactional
     public boolean issue(Long couponId, Long userId) {
-        Coupon coupon = couponRepository.findById(couponId).orElseThrow();
+        Coupon coupon = couponRepository.findByIdForUpdate(couponId).orElseThrow();
         if (coupon.isSoldOut()) {
             return false;
         }
