@@ -7,30 +7,11 @@
     "to": "now"
   },
   "refresh": "5s",
-  "templating": {
-    "list": [
-      {
-        "name": "testid",
-        "label": "testid",
-        "type": "query",
-        "datasource": {
-          "type": "influxdb",
-          "uid": "influxdb"
-        },
-        "query": "SHOW TAG VALUES FROM \"http_reqs\" WITH KEY = \"testid\"",
-        "definition": "SHOW TAG VALUES FROM \"http_reqs\" WITH KEY = \"testid\"",
-        "refresh": 1,
-        "sort": 2,
-        "multi": false,
-        "includeAll": false
-      }
-    ]
-  },
   "panels": [
     {
       "id": 100,
       "type": "stat",
-      "title": "재고",
+      "title": "재고 (최근 쿠폰)",
       "datasource": {
         "type": "mysql",
         "uid": "mysql"
@@ -68,7 +49,7 @@
             "uid": "mysql"
           },
           "refId": "A",
-          "rawSql": "SELECT total_quantity FROM coupon WHERE id = (SELECT max(id) FROM coupon WHERE name = '$testid')",
+          "rawSql": "SELECT total_quantity FROM coupon WHERE id = (SELECT max(id) FROM coupon)",
           "format": "table",
           "rawQuery": true,
           "editorMode": "code"
@@ -116,7 +97,7 @@
             "uid": "mysql"
           },
           "refId": "A",
-          "rawSql": "SELECT count(*) FROM issued_coupon WHERE coupon_id = (SELECT max(id) FROM coupon WHERE name = '$testid')",
+          "rawSql": "SELECT count(*) FROM issued_coupon WHERE coupon_id = (SELECT max(id) FROM coupon)",
           "format": "table",
           "rawQuery": true,
           "editorMode": "code"
@@ -126,10 +107,10 @@
     {
       "id": 102,
       "type": "stat",
-      "title": "k6 매진 (409)",
+      "title": "발급 성공 (200)",
       "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
+        "type": "prometheus",
+        "uid": "prometheus"
       },
       "gridPos": {
         "x": 8,
@@ -160,23 +141,23 @@
       "targets": [
         {
           "datasource": {
-            "type": "influxdb",
-            "uid": "influxdb"
+            "type": "prometheus",
+            "uid": "prometheus"
           },
           "refId": "A",
-          "query": "SELECT count(\"value\") FROM \"http_req_duration\" WHERE \"testid\" = '$testid' AND \"name\" =~ /issue/ AND \"status\" = '409'",
-          "rawQuery": true,
-          "resultFormat": "time_series"
+          "expr": "round(sum(increase(http_server_requests_seconds_count{uri=\"/api/coupons/{couponId}/issue\", status=\"200\"}[$__range])))",
+          "instant": true,
+          "range": false
         }
       ]
     },
     {
       "id": 103,
       "type": "stat",
-      "title": "k6 발급 성공 (200)",
+      "title": "매진 (409)",
       "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
+        "type": "prometheus",
+        "uid": "prometheus"
       },
       "gridPos": {
         "x": 12,
@@ -207,73 +188,26 @@
       "targets": [
         {
           "datasource": {
-            "type": "influxdb",
-            "uid": "influxdb"
+            "type": "prometheus",
+            "uid": "prometheus"
           },
           "refId": "A",
-          "query": "SELECT count(\"value\") FROM \"http_req_duration\" WHERE \"testid\" = '$testid' AND \"name\" =~ /issue/ AND \"status\" = '200'",
-          "rawQuery": true,
-          "resultFormat": "time_series"
+          "expr": "round(sum(increase(http_server_requests_seconds_count{uri=\"/api/coupons/{couponId}/issue\", status=\"409\"}[$__range])))",
+          "instant": true,
+          "range": false
         }
       ]
     },
     {
       "id": 104,
       "type": "stat",
-      "title": "k6 연결 실패",
+      "title": "서버 p95",
       "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
+        "type": "prometheus",
+        "uid": "prometheus"
       },
       "gridPos": {
         "x": 16,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "noValue": "0",
-          "decimals": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "none",
-        "graphMode": "none",
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "influxdb"
-          },
-          "refId": "A",
-          "query": "SELECT count(\"value\") FROM \"http_req_duration\" WHERE \"testid\" = '$testid' AND \"name\" =~ /issue/ AND \"status\" = '0'",
-          "rawQuery": true,
-          "resultFormat": "time_series"
-        }
-      ]
-    },
-    {
-      "id": 105,
-      "type": "stat",
-      "title": "k6 p95 (성공 응답)",
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
-      "gridPos": {
-        "x": 20,
         "y": 0,
         "w": 4,
         "h": 4
@@ -301,13 +235,60 @@
       "targets": [
         {
           "datasource": {
-            "type": "influxdb",
-            "uid": "influxdb"
+            "type": "prometheus",
+            "uid": "prometheus"
           },
           "refId": "A",
-          "query": "SELECT percentile(\"value\", 95) FROM \"http_req_duration\" WHERE \"testid\" = '$testid' AND \"name\" =~ /issue/ AND \"expected_response\" = 'true'",
-          "rawQuery": true,
-          "resultFormat": "time_series"
+          "expr": "histogram_quantile(0.95, sum(increase(http_server_requests_seconds_bucket{uri=\"/api/coupons/{couponId}/issue\"}[$__range])) by (le)) * 1000",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "type": "stat",
+      "title": "최고 TPS",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "noValue": "0",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max_over_time(sum(rate(http_server_requests_seconds_count{uri=\"/api/coupons/{couponId}/issue\"}[1m]))[$__range:5s])",
+          "instant": true,
+          "range": false
         }
       ]
     },
