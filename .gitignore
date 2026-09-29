@@ -3,3 +3,4 @@ build/
 out/
 .idea/
 *.iml
+monitoring/grafana/dashboards/*-dashboard.json

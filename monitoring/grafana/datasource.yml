@@ -2,6 +2,7 @@ apiVersion: 1
 
 deleteDatasources:
   - name: k6-influxdb
+  - name: coupon-mysql
 
 datasources:
   - name: prometheus
@@ -12,13 +13,3 @@ datasources:
     isDefault: true
     jsonData:
       timeInterval: 5s
-
-  - name: coupon-mysql
-    uid: mysql
-    type: mysql
-    url: mysql:3306
-    user: root
-    jsonData:
-      database: coupon
-    secureJsonData:
-      password: "1234"

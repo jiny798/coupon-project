@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: coupon-consumer
+  datasource:
+    url: jdbc:mysql://localhost:3306/coupon
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: none
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: dev.kenzi.coupon
+    listener:
+      ack-mode: manual
+      concurrency: 3
+
+server:
+  port: 8081
+
+management:
+  server:
+    port: 8083
+  endpoints:
+    web:
+      exposure:
+        include: prometheus

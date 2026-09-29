@@ -1,5 +1,5 @@
 ### create coupon
-POST http://localhost:8080/api/coupons
+POST http://localhost:8080/api/coupon
 Content-Type: application/json
 
 {
@@ -12,13 +12,41 @@ Content-Type: application/json
 %}
 
 ### issue userId=1
-POST http://localhost:8080/api/coupons/{{couponId}}/issue?userId=1
+POST http://localhost:8080/api/coupon/{{couponId}}/issue/test
+Content-Type: application/json
+
+{
+  "userId": 1
+}
 
 ### issue userId=2
-POST http://localhost:8080/api/coupons/{{couponId}}/issue?userId=2
+POST http://localhost:8080/api/coupon/{{couponId}}/issue/test
+Content-Type: application/json
+
+{
+  "userId": 2
+}
 
 ### issue userId=3
-POST http://localhost:8080/api/coupons/{{couponId}}/issue?userId=3
+POST http://localhost:8080/api/coupon/{{couponId}}/issue/test
+Content-Type: application/json
+
+{
+  "userId": 3
+}
 
 ### issue userId=4
-POST http://localhost:8080/api/coupons/{{couponId}}/issue?userId=4
+POST http://localhost:8080/api/coupon/{{couponId}}/issue/test
+Content-Type: application/json
+
+{
+  "userId": 4
+}
+
+### issue userId=1 again
+POST http://localhost:8080/api/coupon/{{couponId}}/issue/test
+Content-Type: application/json
+
+{
+  "userId": 1
+}

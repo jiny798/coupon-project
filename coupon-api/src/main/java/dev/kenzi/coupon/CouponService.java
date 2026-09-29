@@ -7,15 +7,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class CouponService {
 
     private final CouponRepository couponRepository;
-    private final IssuedCouponRepository issuedCouponRepository;
     private final CouponIssueRedis couponIssueRedis;
+    private final CouponIssueProducer couponIssueProducer;
 
     public CouponService(CouponRepository couponRepository,
-                         IssuedCouponRepository issuedCouponRepository,
-                         CouponIssueRedis couponIssueRedis) {
+                         CouponIssueRedis couponIssueRedis,
+                         CouponIssueProducer couponIssueProducer) {
         this.couponRepository = couponRepository;
-        this.issuedCouponRepository = issuedCouponRepository;
         this.couponIssueRedis = couponIssueRedis;
+        this.couponIssueProducer = couponIssueProducer;
     }
 
     @Transactional
@@ -24,7 +24,6 @@ public class CouponService {
         return coupon.getId();
     }
 
-    @Transactional
     public IssueResult issue(Long couponId, Long userId) {
         Coupon coupon = couponRepository.findById(couponId).orElseThrow();
 
@@ -38,7 +37,12 @@ public class CouponService {
             return IssueResult.SOLD_OUT;
         }
 
-        issuedCouponRepository.save(new IssuedCoupon(couponId, userId));
+        try {
+            couponIssueProducer.send(new CouponIssueMessage(couponId, userId));
+        } catch (RuntimeException e) {
+            couponIssueRedis.removeUser(couponId, userId);
+            throw e;
+        }
         return IssueResult.ISSUED;
     }
 

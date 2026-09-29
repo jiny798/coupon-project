@@ -1,16 +1,14 @@
 package dev.kenzi.coupon;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/coupons")
+@RequestMapping("/api/coupon")
 public class CouponController {
 
     private final CouponService couponService;
@@ -24,16 +22,19 @@ public class CouponController {
         return couponService.create(request.name(), request.totalQuantity());
     }
 
-    @PostMapping("/{couponId}/issue")
+    @PostMapping("/{couponId}/issue/test")
     public ResponseEntity<String> issue(@PathVariable("couponId") Long couponId,
-                                        @RequestParam("userId") Long userId) {
-        return switch (couponService.issue(couponId, userId)) {
-            case ISSUED -> ResponseEntity.ok("issued");
-            case DUPLICATE -> ResponseEntity.status(HttpStatus.CONFLICT).body("duplicate");
-            case SOLD_OUT -> ResponseEntity.status(HttpStatus.CONFLICT).body("sold out");
+                                        @RequestBody IssueRequest request) {
+        return switch (couponService.issue(couponId, request.userId())) {
+            case ISSUED -> ResponseEntity.accepted().body("issued");
+            case DUPLICATE -> ResponseEntity.ok("duplicate");
+            case SOLD_OUT -> ResponseEntity.ok("sold out");
         };
     }
 
     public record CreateCouponRequest(String name, int totalQuantity) {
+    }
+
+    public record IssueRequest(Long userId) {
     }
 }
