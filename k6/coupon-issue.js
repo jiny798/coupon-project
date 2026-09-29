@@ -2,7 +2,7 @@ import http from 'k6/http';
 import exec from 'k6/execution';
 import { check, sleep } from 'k6';
 
-const BASE = 'http://localhost:8080';
+const BASE = __ENV.BASE || 'http://localhost:8080';
 const QUANTITY = Number(__ENV.QUANTITY || 100000);
 
 export const options = {
