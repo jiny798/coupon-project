@@ -77,7 +77,9 @@ services:
     command: java -Xmx512m -jar /app.jar
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coupon
+      SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      COUPON_ISSUE_RATE_LIMIT: ${COUPON_ISSUE_RATE_LIMIT:-200}
     volumes:
       - ../coupon-consumer/build/libs/coupon-consumer-0.0.1.jar:/app.jar:ro
     restart: on-failure
