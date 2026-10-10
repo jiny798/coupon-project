@@ -1,0 +1,16 @@
+name: coupon-api
+
+services:
+  coupon-api:
+    image: eclipse-temurin:17-jre
+    command: java -Xmx512m -jar /app.jar
+    ports:
+      - "8080:8080"
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://${INFRA_HOST:?set INFRA_HOST in .env}:3306/coupon
+      SPRING_DATA_REDIS_HOST: ${INFRA_HOST:?set INFRA_HOST in .env}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${INFRA_HOST:?set INFRA_HOST in .env}:9092
+    volumes:
+      - ../../../coupon-api/build/libs/coupon-api-0.0.1.jar:/app.jar:ro
+    restart: on-failure

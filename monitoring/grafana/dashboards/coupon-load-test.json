@@ -948,8 +948,8 @@
             "uid": "prometheus"
           },
           "refId": "B",
-          "expr": "max(system_cpu_usage)",
-          "legendFormat": "머신 전체"
+          "expr": "system_cpu_usage",
+          "legendFormat": "{{job}} 서버 전체"
         }
       ]
     },

@@ -1,0 +1,22 @@
+name: coupon-monitoring
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      - "api:${API_HOST:?set API_HOST in .env}"
+      - "consumer:${CONSUMER_HOST:?set CONSUMER_HOST in .env}"
+      - "infra:${INFRA_HOST:?set INFRA_HOST in .env}"
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../../monitoring/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ../../../monitoring/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml:ro
+      - ../../../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
