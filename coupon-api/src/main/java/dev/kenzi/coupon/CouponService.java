@@ -25,14 +25,14 @@ public class CouponService {
     }
 
     public IssueResult issue(Long couponId, Long userId) {
-        Coupon coupon = couponRepository.findById(couponId).orElseThrow();
+        int totalQuantity = totalQuantity(couponId);
 
         if (!couponIssueRedis.addUser(couponId, userId)) {
             return IssueResult.DUPLICATE;
         }
 
         long order = couponIssueRedis.increment(couponId);
-        if (order > coupon.getTotalQuantity()) {
+        if (order > totalQuantity) {
             couponIssueRedis.removeUser(couponId, userId);
             return IssueResult.SOLD_OUT;
         }
@@ -44,6 +44,16 @@ public class CouponService {
             throw e;
         }
         return IssueResult.ISSUED;
+    }
+
+    private int totalQuantity(Long couponId) {
+        Integer cached = couponIssueRedis.findTotalQuantity(couponId);
+        if (cached != null) {
+            return cached;
+        }
+        int totalQuantity = couponRepository.findById(couponId).orElseThrow().getTotalQuantity();
+        couponIssueRedis.saveTotalQuantity(couponId, totalQuantity);
+        return totalQuantity;
     }
 
     public enum IssueResult {
