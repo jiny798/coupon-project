@@ -1,0 +1,22 @@
+name: coupon-db
+
+services:
+  mysql:
+    image: mysql:8.0.34
+    command: --innodb-buffer-pool-size=256M
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: coupon
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    ports:
+      - "9104:9104"
+    command:
+      - "--mysqld.address=mysql:3306"
+      - "--mysqld.username=root:1234"
+    restart: always
+    depends_on:
+      - mysql
