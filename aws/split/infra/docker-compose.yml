@@ -3,7 +3,9 @@ name: coupon-infra
 services:
   mysql:
     image: mysql:8.0.34
-    command: --innodb-buffer-pool-size=256M
+    command:
+      - --innodb-buffer-pool-size=256M
+      - --innodb-flush-log-at-trx-commit=2
     ports:
       - "3306:3306"
     environment:
