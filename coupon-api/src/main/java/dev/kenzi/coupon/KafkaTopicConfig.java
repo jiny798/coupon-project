@@ -11,7 +11,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic couponIssueTopic() {
         return TopicBuilder.name(CouponIssueMessage.TOPIC)
-                .partitions(20)
+                .partitions(30)
                 .replicas(1)
                 .build();
     }

@@ -5,6 +5,8 @@ spring:
     url: jdbc:mysql://localhost:3306/coupon
     username: root
     password: 1234
+    hikari:
+      maximum-pool-size: 15
   jpa:
     hibernate:
       ddl-auto: none
@@ -19,7 +21,7 @@ spring:
         spring.json.trusted.packages: dev.kenzi.coupon
     listener:
       ack-mode: manual
-      concurrency: 10
+      concurrency: 15
 
 server:
   port: 8081
