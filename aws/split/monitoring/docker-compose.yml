@@ -11,6 +11,7 @@ services:
       - "api:${API_HOST:?set API_HOST in .env}"
       - "consumer:${CONSUMER_HOST:?set CONSUMER_HOST in .env}"
       - "infra:${INFRA_HOST:?set INFRA_HOST in .env}"
+      - "db:${DB_HOST:?set DB_HOST in .env}"
 
   grafana:
     image: grafana/grafana:10.4.2
