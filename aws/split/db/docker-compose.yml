@@ -22,3 +22,8 @@ services:
     restart: always
     depends_on:
       - mysql
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    ports:
+      - "9100:9100"
