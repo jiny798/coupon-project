@@ -6,7 +6,7 @@ spring:
     username: root
     password: 1234
     hikari:
-      maximum-pool-size: 15
+      maximum-pool-size: 30
   jpa:
     hibernate:
       ddl-auto: none
@@ -21,7 +21,7 @@ spring:
         spring.json.trusted.packages: dev.kenzi.coupon
     listener:
       ack-mode: manual
-      concurrency: 15
+      concurrency: 30
 
 server:
   port: 8081
