@@ -260,7 +260,7 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "max_over_time(sum(rate(spring_kafka_listener_seconds_count{job=\"coupon-consumer\", result=\"success\"}[1m]))[$__range:5s])",
+          "expr": "max_over_time(sum(rate(coupon_issue_stored_total{job=\"coupon-consumer\"}[1m]))[$__range:5s])",
           "instant": true,
           "range": false
         }
@@ -644,7 +644,7 @@
             "uid": "prometheus"
           },
           "refId": "B",
-          "expr": "sum(rate(spring_kafka_listener_seconds_count{job=\"coupon-consumer\", result=\"success\"}[1m]))",
+          "expr": "sum(rate(coupon_issue_stored_total{job=\"coupon-consumer\"}[1m]))",
           "legendFormat": "처리 (컨슈머 완료)"
         }
       ]
@@ -746,7 +746,7 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "sum(rate(spring_kafka_listener_seconds_sum{job=\"coupon-consumer\"}[1m])) / sum(rate(spring_kafka_listener_seconds_count{job=\"coupon-consumer\"}[1m]))",
+          "expr": "sum(rate(spring_kafka_listener_seconds_sum{job=\"coupon-consumer\"}[1m])) / sum(rate(coupon_issue_stored_total{job=\"coupon-consumer\"}[1m]))",
           "legendFormat": "평균"
         },
         {
@@ -756,7 +756,7 @@
           },
           "refId": "B",
           "expr": "max(spring_kafka_listener_seconds_max{job=\"coupon-consumer\"})",
-          "legendFormat": "최대"
+          "legendFormat": "배치 한 번 최대"
         }
       ]
     },
@@ -771,7 +771,7 @@
       "gridPos": {
         "x": 0,
         "y": 23,
-        "w": 8,
+        "w": 6,
         "h": 8
       },
       "fieldConfig": {
@@ -820,9 +820,9 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 8,
+        "x": 6,
         "y": 23,
-        "w": 8,
+        "w": 6,
         "h": 8
       },
       "fieldConfig": {
@@ -889,9 +889,9 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 16,
+        "x": 12,
         "y": 23,
-        "w": 8,
+        "w": 6,
         "h": 8
       },
       "fieldConfig": {
@@ -946,6 +946,57 @@
           "refId": "C",
           "expr": "max(coupon_issue_store_delay_seconds_max{job=\"coupon-consumer\"})",
           "legendFormat": "최대"
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "type": "timeseries",
+      "title": "배치 크기 (한 번에 넣는 건수)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 23,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum(rate(coupon_issue_stored_total{job=\"coupon-consumer\"}[1m])) / sum(rate(spring_kafka_listener_seconds_count{job=\"coupon-consumer\"}[1m]))",
+          "legendFormat": "평균"
         }
       ]
     },
@@ -1369,6 +1420,15 @@
           "refId": "A",
           "expr": "sum by (command) (rate(mysql_global_status_commands_total{command=~\"insert|select\"}[1m]))",
           "legendFormat": "{{command}}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "sum(rate(mysql_global_status_innodb_row_ops_total{operation=\"inserted\"}[1m]))",
+          "legendFormat": "넣은 행"
         }
       ]
     },
@@ -1759,6 +1819,15 @@
           "refId": "B",
           "expr": "delta(mysql_global_status_innodb_data_fsyncs[1m]) / 60",
           "legendFormat": "데이터 파일"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "sum(rate(mysql_perf_schema_file_events_total{event_name=\"wait/io/file/sql/binlog\", mode=\"misc\"}[1m]))",
+          "legendFormat": "binlog (sync 등)"
         }
       ]
     },

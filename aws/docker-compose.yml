@@ -76,7 +76,7 @@ services:
     image: eclipse-temurin:17-jre
     command: java -Xmx512m -jar /app.jar
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coupon
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coupon?rewriteBatchedStatements=true
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     volumes:
       - ../coupon-consumer/build/libs/coupon-consumer-0.0.1.jar:/app.jar:ro

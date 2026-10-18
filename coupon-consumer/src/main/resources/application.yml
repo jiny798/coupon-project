@@ -2,7 +2,7 @@ spring:
   application:
     name: coupon-consumer
   datasource:
-    url: jdbc:mysql://localhost:3306/coupon
+    url: jdbc:mysql://localhost:3306/coupon?rewriteBatchedStatements=true
     username: root
     password: 1234
     hikari:
@@ -20,6 +20,7 @@ spring:
       properties:
         spring.json.trusted.packages: dev.kenzi.coupon
     listener:
+      type: batch
       ack-mode: manual
       concurrency: 30
 
