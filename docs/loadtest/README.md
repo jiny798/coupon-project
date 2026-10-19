@@ -608,3 +608,28 @@ VU 10,000 구간에서 처음으로 버퍼 풀에 없어 디스크에서 읽는 
 | 7 | 측정 신뢰 | 46%, 통과 |
 
 먼저 막힌 요청 쪽을 넓힌다. API를 두 대로 늘리고 앞에 로드밸런서를 둔다.
+
+## API 스케일 아웃
+
+VU 10,000 진단에서 먼저 막힌 건 API 서버 한 대였다. CPU가 84%까지 올라 요청 한 건이 27ms로 길어졌고, 톰캣 스레드 200 ÷ 0.027초 ≈ 초당 7,400건에서 멈췄다. CPU가 거의 다 찼으니 스레드만 늘려서는 안 풀리고, CPU와 스레드를 같이 늘려야 한다. 서버 한 대를 더 키우는 대신 API를 두 대로 나누고 앞에 로드밸런서(nginx)를 둔다. API는 발급 상태를 Redis에 두고 서버에는 아무것도 들고 있지 않아서, 같은 API를 여러 대 띄우기만 하면 된다.
+
+```
+전   k6 ──▶ API 1대 (t3.xlarge) ──────────────────────────────┐
+후   k6 ──▶ nginx (t3.medium) ──┬──▶ API ① (t3.xlarge) ──┬───┴──▶ Redis · Kafka
+                                └──▶ API ② (t3.xlarge) ──┘
+```
+
+nginx 설정 (aws/split/lb)
+
+- 두 API에 번갈아 보낸다 (round robin)
+- `worker_connections 20000`: k6 연결 10,000개와 API로 가는 연결을 같이 들고 있어야 해서 기본값(1,024)으로는 모자란다. `worker_rlimit_nofile`과 컨테이너 `nofile`도 65,535로 올렸다
+- API로 가는 연결은 keep-alive로 다시 쓴다 (`proxy_http_version 1.1`, `Connection ""`, upstream `keepalive 1024`). 안 그러면 요청마다 API와 연결을 새로 맺는다
+- nginx 자체가 병목인지 보려고 stub_status + nginx-prometheus-exporter, LB 서버 CPU용 node-exporter를 같이 띄운다
+
+대시보드는 API 패널을 서버별로 보이게 바꾸고(톰캣 스레드 · 연결 · CPU · 힙 · GC), "로드밸런서 (nginx)" 줄(LB 서버 CPU, nginx 초당 요청 · 연결, API 서버별 TPS)을 넣었다.
+
+- k6는 API 대신 nginx로 보낸다
+- 나머지는 VU 10,000 진단과 같음 (k6 t3.2xlarge, DB t3.xlarge, 인프라 · 컨슈머 t3.medium, 계단 17분, 재고 600만)
+- 서버 8대, 약 $1.22/시간
+
+API TPS가 VU 10,000에서 초당 9,500건 이상으로 오르는지, 두 API에 고르게 나뉘는지, nginx가 새 병목이 되지 않는지 본다. API가 다 받으면 Kafka에 들어오는 양도 초당 10,000건 가까이로 늘어서, 인프라(진단 때 86%)와 컨슈머 서버(76%)가 다음 한계가 될 수 있다.
