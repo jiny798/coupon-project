@@ -6,7 +6,7 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     scrape_interval: 5s
     static_configs:
-      - targets: ["api:8082"]
+      - targets: ["api1:8082", "api2:8082"]
 
   - job_name: coupon-consumer
     metrics_path: /actuator/prometheus
@@ -21,6 +21,14 @@ scrape_configs:
   - job_name: db-node
     static_configs:
       - targets: ["db:9100"]
+
+  - job_name: nginx
+    static_configs:
+      - targets: ["lb:9113"]
+
+  - job_name: lb-node
+    static_configs:
+      - targets: ["lb:9100"]
 
   - job_name: redis-exporter
     static_configs:

@@ -494,7 +494,7 @@
           },
           "refId": "A",
           "expr": "max_over_time(tomcat_threads_busy_threads{job=\"coupon-api\"}[$__rate_interval])",
-          "legendFormat": "사용 중"
+          "legendFormat": "사용 중 {{instance}}"
         },
         {
           "datasource": {
@@ -502,8 +502,8 @@
             "uid": "prometheus"
           },
           "refId": "B",
-          "expr": "tomcat_threads_config_max_threads{job=\"coupon-api\"}",
-          "legendFormat": "최대"
+          "expr": "max(tomcat_threads_config_max_threads{job=\"coupon-api\"})",
+          "legendFormat": "최대 (한 대)"
         }
       ]
     },
@@ -554,7 +554,7 @@
           },
           "refId": "A",
           "expr": "max_over_time(hikaricp_connections_active{job=\"coupon-api\"}[$__rate_interval])",
-          "legendFormat": "사용 중"
+          "legendFormat": "사용 중 {{instance}}"
         },
         {
           "datasource": {
@@ -563,7 +563,7 @@
           },
           "refId": "B",
           "expr": "max_over_time(hikaricp_connections_pending{job=\"coupon-api\"}[$__rate_interval])",
-          "legendFormat": "대기"
+          "legendFormat": "대기 {{instance}}"
         },
         {
           "datasource": {
@@ -571,15 +571,15 @@
             "uid": "prometheus"
           },
           "refId": "C",
-          "expr": "hikaricp_connections_max{job=\"coupon-api\"}",
-          "legendFormat": "최대"
+          "expr": "max(hikaricp_connections_max{job=\"coupon-api\"})",
+          "legendFormat": "최대 (한 대)"
         }
       ]
     },
     {
       "id": 40,
       "type": "timeseries",
-      "title": "톰캣 연결 수 (k6 VU마다 1개씩 유지)",
+      "title": "톰캣 연결 수 (API 서버별)",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -622,8 +622,8 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "max(tomcat_connections_current_connections{job=\"coupon-api\"})",
-          "legendFormat": "지금 연결"
+          "expr": "tomcat_connections_current_connections{job=\"coupon-api\"}",
+          "legendFormat": "지금 연결 {{instance}}"
         },
         {
           "datasource": {
@@ -637,13 +637,250 @@
       ]
     },
     {
+      "id": 41,
+      "type": "row",
+      "title": "로드밸런서 (nginx)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 42,
+      "type": "timeseries",
+      "title": "LB 서버 CPU",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{job=\"lb-node\", mode=\"idle\"}[1m])))",
+          "legendFormat": "CPU"
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "type": "timeseries",
+      "title": "nginx 초당 요청",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 21,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum(rate(nginx_http_requests_total[1m]))",
+          "legendFormat": "요청"
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "type": "timeseries",
+      "title": "nginx 연결",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum(nginx_connections_active)",
+          "legendFormat": "전체"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "sum(nginx_connections_writing)",
+          "legendFormat": "처리 중"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "sum(nginx_connections_waiting)",
+          "legendFormat": "대기 (keep-alive)"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "type": "timeseries",
+      "title": "API 서버별 TPS",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 21,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (instance) (rate(http_server_requests_seconds_count{job=\"coupon-api\", uri=\"/api/coupon/{couponId}/issue/test\"}[1m]))",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
       "id": 13,
       "type": "row",
       "title": "Kafka · 컨슈머",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 20,
+        "y": 29,
         "w": 24,
         "h": 1
       },
@@ -659,7 +896,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 21,
+        "y": 30,
         "w": 8,
         "h": 8
       },
@@ -719,7 +956,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 21,
+        "y": 30,
         "w": 8,
         "h": 8
       },
@@ -770,7 +1007,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 21,
+        "y": 30,
         "w": 8,
         "h": 8
       },
@@ -830,7 +1067,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 29,
+        "y": 38,
         "w": 6,
         "h": 8
       },
@@ -881,7 +1118,7 @@
       },
       "gridPos": {
         "x": 6,
-        "y": 29,
+        "y": 38,
         "w": 6,
         "h": 8
       },
@@ -950,7 +1187,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 29,
+        "y": 38,
         "w": 6,
         "h": 8
       },
@@ -1019,7 +1256,7 @@
       },
       "gridPos": {
         "x": 18,
-        "y": 29,
+        "y": 38,
         "w": 6,
         "h": 8
       },
@@ -1067,7 +1304,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 37,
+        "y": 46,
         "w": 24,
         "h": 1
       },
@@ -1083,7 +1320,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 38,
+        "y": 47,
         "w": 8,
         "h": 8
       },
@@ -1120,7 +1357,7 @@
           },
           "refId": "A",
           "expr": "process_cpu_usage",
-          "legendFormat": "{{job}}"
+          "legendFormat": "{{instance}}"
         },
         {
           "datasource": {
@@ -1129,7 +1366,7 @@
           },
           "refId": "B",
           "expr": "system_cpu_usage",
-          "legendFormat": "{{job}} 서버 전체"
+          "legendFormat": "{{instance}} 서버 전체"
         }
       ]
     },
@@ -1143,7 +1380,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 38,
+        "y": 47,
         "w": 8,
         "h": 8
       },
@@ -1179,8 +1416,8 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "sum by (job) (jvm_memory_used_bytes{area=\"heap\"})",
-          "legendFormat": "{{job}} 사용"
+          "expr": "sum by (instance) (jvm_memory_used_bytes{area=\"heap\"})",
+          "legendFormat": "{{instance}} 사용"
         },
         {
           "datasource": {
@@ -1188,8 +1425,8 @@
             "uid": "prometheus"
           },
           "refId": "B",
-          "expr": "sum by (job) (jvm_memory_max_bytes{area=\"heap\"})",
-          "legendFormat": "{{job}} 최대"
+          "expr": "sum by (instance) (jvm_memory_max_bytes{area=\"heap\"})",
+          "legendFormat": "{{instance}} 최대"
         }
       ]
     },
@@ -1203,7 +1440,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 38,
+        "y": 47,
         "w": 8,
         "h": 8
       },
@@ -1239,8 +1476,8 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "sum by (job) (rate(jvm_gc_pause_seconds_sum[1m]))",
-          "legendFormat": "{{job}}"
+          "expr": "sum by (instance) (rate(jvm_gc_pause_seconds_sum[1m]))",
+          "legendFormat": "{{instance}}"
         }
       ]
     },
@@ -1251,7 +1488,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 46,
+        "y": 55,
         "w": 24,
         "h": 1
       },
@@ -1267,7 +1504,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 47,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1318,7 +1555,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 47,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1378,7 +1615,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 47,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1426,7 +1663,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 55,
+        "y": 64,
         "w": 24,
         "h": 1
       },
@@ -1442,7 +1679,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 56,
+        "y": 65,
         "w": 8,
         "h": 8
       },
@@ -1502,7 +1739,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 56,
+        "y": 65,
         "w": 8,
         "h": 8
       },
@@ -1562,7 +1799,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 56,
+        "y": 65,
         "w": 8,
         "h": 8
       },
@@ -1610,7 +1847,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 64,
+        "y": 73,
         "w": 24,
         "h": 1
       },
@@ -1626,7 +1863,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 65,
+        "y": 74,
         "w": 8,
         "h": 8
       },
@@ -1679,7 +1916,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 65,
+        "y": 74,
         "w": 8,
         "h": 8
       },
@@ -1730,7 +1967,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 65,
+        "y": 74,
         "w": 8,
         "h": 8
       },
@@ -1781,7 +2018,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 73,
+        "y": 82,
         "w": 8,
         "h": 8
       },
@@ -1832,7 +2069,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 73,
+        "y": 82,
         "w": 8,
         "h": 8
       },
@@ -1901,7 +2138,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 73,
+        "y": 82,
         "w": 8,
         "h": 8
       },
