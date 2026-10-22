@@ -12,8 +12,19 @@ services:
       - "api2:${API2_HOST:?set API2_HOST in .env}"
       - "lb:${LB_HOST:?set LB_HOST in .env}"
       - "consumer:${CONSUMER_HOST:?set CONSUMER_HOST in .env}"
-      - "infra:${INFRA_HOST:?set INFRA_HOST in .env}"
+      - "redis:${REDIS_HOST:?set REDIS_HOST in .env}"
+      - "kafka1:${KAFKA1_HOST:?set KAFKA1_HOST in .env}"
+      - "kafka2:${KAFKA2_HOST:?set KAFKA2_HOST in .env}"
+      - "kafka3:${KAFKA3_HOST:?set KAFKA3_HOST in .env}"
       - "db:${DB_HOST:?set DB_HOST in .env}"
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.7.0
+    command:
+      - "--kafka.server=${KAFKA1_HOST:?set KAFKA1_HOST in .env}:9092"
+      - "--kafka.server=${KAFKA2_HOST:?set KAFKA2_HOST in .env}:9092"
+      - "--kafka.server=${KAFKA3_HOST:?set KAFKA3_HOST in .env}:9092"
+    restart: always
 
   grafana:
     image: grafana/grafana:10.4.2

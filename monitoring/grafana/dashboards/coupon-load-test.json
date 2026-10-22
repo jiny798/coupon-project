@@ -1298,13 +1298,252 @@
       ]
     },
     {
+      "id": 46,
+      "type": "row",
+      "title": "인프라 서버 (Redis · Kafka)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 46,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 47,
+      "type": "timeseries",
+      "title": "서버별 CPU",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 47,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job=~\"redis-node|kafka-node\", mode=\"idle\"}[1m])))",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "type": "timeseries",
+      "title": "Kafka 발행 응답 (API → 브로커, ack까지)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 47,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (instance) (kafka_producer_request_latency_avg{job=\"coupon-api\"})",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "type": "timeseries",
+      "title": "브로커 · 복제 상태",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 47,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "kafka_brokers",
+          "legendFormat": "살아 있는 브로커"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "min(kafka_topic_partition_in_sync_replica{topic=\"coupon-issue\"})",
+          "legendFormat": "가장 적은 ISR"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "sum(kafka_topic_partition_under_replicated_partition{topic=\"coupon-issue\"})",
+          "legendFormat": "복제가 덜 된 파티션"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "timeseries",
+      "title": "브로커별 리더 파티션 수",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 47,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "count_values(\"leader\", kafka_topic_partition_leader{topic=\"coupon-issue\"})",
+          "legendFormat": "브로커 {{leader}}"
+        }
+      ]
+    },
+    {
       "id": 19,
       "type": "row",
       "title": "JVM",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 46,
+        "y": 55,
         "w": 24,
         "h": 1
       },
@@ -1320,7 +1559,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 47,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1380,7 +1619,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 47,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1440,7 +1679,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 47,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1488,7 +1727,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 55,
+        "y": 64,
         "w": 24,
         "h": 1
       },
@@ -1504,7 +1743,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 56,
+        "y": 65,
         "w": 8,
         "h": 8
       },
@@ -1555,7 +1794,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 56,
+        "y": 65,
         "w": 8,
         "h": 8
       },
@@ -1615,7 +1854,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 56,
+        "y": 65,
         "w": 8,
         "h": 8
       },
@@ -1663,7 +1902,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 64,
+        "y": 73,
         "w": 24,
         "h": 1
       },
@@ -1679,7 +1918,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 65,
+        "y": 74,
         "w": 8,
         "h": 8
       },
@@ -1739,7 +1978,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 65,
+        "y": 74,
         "w": 8,
         "h": 8
       },
@@ -1799,7 +2038,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 65,
+        "y": 74,
         "w": 8,
         "h": 8
       },
@@ -1847,7 +2086,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 73,
+        "y": 82,
         "w": 24,
         "h": 1
       },
@@ -1863,7 +2102,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 74,
+        "y": 83,
         "w": 8,
         "h": 8
       },
@@ -1916,7 +2155,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 74,
+        "y": 83,
         "w": 8,
         "h": 8
       },
@@ -1967,7 +2206,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 74,
+        "y": 83,
         "w": 8,
         "h": 8
       },
@@ -2018,7 +2257,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 82,
+        "y": 91,
         "w": 8,
         "h": 8
       },
@@ -2069,7 +2308,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 82,
+        "y": 91,
         "w": 8,
         "h": 8
       },
@@ -2138,7 +2377,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 82,
+        "y": 91,
         "w": 8,
         "h": 8
       },

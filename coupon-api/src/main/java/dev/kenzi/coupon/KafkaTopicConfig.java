@@ -12,7 +12,6 @@ public class KafkaTopicConfig {
     public NewTopic couponIssueTopic() {
         return TopicBuilder.name(CouponIssueMessage.TOPIC)
                 .partitions(30)
-                .replicas(1)
                 .build();
     }
 }
