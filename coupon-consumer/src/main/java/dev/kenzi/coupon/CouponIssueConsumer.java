@@ -6,7 +6,6 @@ import io.micrometer.core.instrument.Timer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
@@ -36,14 +35,13 @@ public class CouponIssueConsumer {
     }
 
     @KafkaListener(topics = CouponIssueMessage.TOPIC, groupId = "coupon-issue-group")
-    public void listen(List<ConsumerRecord<String, CouponIssueMessage>> records, Acknowledgment ack) {
+    public void listen(List<ConsumerRecord<String, CouponIssueMessage>> records) {
         Timestamp issuedAt = Timestamp.valueOf(LocalDateTime.now());
         jdbcTemplate.batchUpdate(INSERT_IGNORE, records, records.size(), (ps, record) -> {
             ps.setLong(1, record.value().couponId());
             ps.setLong(2, record.value().userId());
             ps.setTimestamp(3, issuedAt);
         });
-        ack.acknowledge();
         long now = System.currentTimeMillis();
         records.forEach(record -> storeDelay.record(now - record.timestamp(), TimeUnit.MILLISECONDS));
         stored.increment(records.size());

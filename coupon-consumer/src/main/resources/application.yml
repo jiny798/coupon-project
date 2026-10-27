@@ -21,7 +21,8 @@ spring:
         spring.json.trusted.packages: dev.kenzi.coupon
     listener:
       type: batch
-      ack-mode: manual
+      ack-mode: time
+      ack-time: 100ms
       concurrency: 30
 
 server:
