@@ -1,12 +1,27 @@
 name: coupon-kafka
 
 services:
+  jmx-agent:
+    image: curlimages/curl:8.7.1
+    user: root
+    command: ["-fsSL", "-o", "/jmx/jmx_prometheus_javaagent.jar", "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar"]
+    volumes:
+      - jmx-agent:/jmx
+
   kafka:
     image: confluentinc/cp-kafka:7.6.1
     ports:
       - "9092:9092"
       - "9093:9093"
+      - "7071:7071"
+    volumes:
+      - jmx-agent:/opt/jmx-agent:ro
+      - ./jmx.yml:/opt/jmx-agent-config/kafka.yml:ro
+    depends_on:
+      jmx-agent:
+        condition: service_completed_successfully
     environment:
+      KAFKA_OPTS: "-javaagent:/opt/jmx-agent/jmx_prometheus_javaagent.jar=7071:/opt/jmx-agent-config/kafka.yml"
       CLUSTER_ID: 9CTF7_MNTkWSAHfPMwWGcQ
       KAFKA_NODE_ID: ${NODE_ID:?set NODE_ID in .env}
       KAFKA_PROCESS_ROLES: broker,controller
@@ -26,3 +41,6 @@ services:
     image: prom/node-exporter:v1.8.1
     ports:
       - "9100:9100"
+
+volumes:
+  jmx-agent:

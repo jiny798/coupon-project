@@ -1,0 +1,24 @@
+lowercaseOutputName: true
+rules:
+  - pattern: 'kafka.network<type=RequestMetrics, name=(\w+)TimeMs, request=(Produce|FetchFollower|FetchConsumer|OffsetCommit)><>(50|95)thPercentile'
+    name: kafka_request_time_ms
+    labels:
+      part: $1
+      request: $2
+      quantile: '0.$3'
+  - pattern: 'kafka.network<type=RequestMetrics, name=RequestsPerSec, request=(Produce|FetchFollower|FetchConsumer|OffsetCommit|Heartbeat), version=(\d+)><>Count'
+    name: kafka_requests_total
+    type: COUNTER
+    labels:
+      request: $1
+      version: $2
+  - pattern: 'kafka.server<type=KafkaRequestHandlerPool, name=RequestHandlerAvgIdlePercent><>OneMinuteRate'
+    name: kafka_request_handler_idle_ratio
+  - pattern: 'kafka.network<type=SocketServer, name=NetworkProcessorAvgIdlePercent><>Value'
+    name: kafka_network_processor_idle_ratio
+  - pattern: 'kafka.controller<type=KafkaController, name=ActiveControllerCount><>Value'
+    name: kafka_controller_active
+  - pattern: 'kafka.coordinator.group<type=GroupMetadataManager, name=NumGroups><>Value'
+    name: kafka_coordinator_groups
+  - pattern: 'kafka.server<type=ReplicaManager, name=(LeaderCount|PartitionCount|UnderReplicatedPartitions)><>Value'
+    name: kafka_replica_manager_$1

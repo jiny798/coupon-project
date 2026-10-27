@@ -1537,13 +1537,469 @@
       ]
     },
     {
+      "id": 51,
+      "type": "row",
+      "title": "Kafka 브로커 (JMX)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 55,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 52,
+      "type": "timeseries",
+      "title": "발행 처리 시간 구간별 (세 대 평균, 중앙값)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 56,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "fillOpacity": 30,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "avg by (part) (kafka_request_time_ms{request=\"Produce\", quantile=\"0.50\", part=~\"RequestQueue|Local|Remote|ResponseQueue|ResponseSend\"})",
+          "legendFormat": "{{part}}"
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "type": "timeseries",
+      "title": "발행 처리 시간 구간별 (세 대 평균, p95)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 56,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "fillOpacity": 30,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "avg by (part) (kafka_request_time_ms{request=\"Produce\", quantile=\"0.95\", part=~\"RequestQueue|Local|Remote|ResponseQueue|ResponseSend\"})",
+          "legendFormat": "{{part}}"
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "type": "timeseries",
+      "title": "발행 처리 시간 전체 (브로커별)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 56,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "kafka_request_time_ms{request=\"Produce\", part=\"Total\", quantile=\"0.50\"}",
+          "legendFormat": "{{instance}} 중앙값"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "kafka_request_time_ms{request=\"Produce\", part=\"Total\", quantile=\"0.95\"}",
+          "legendFormat": "{{instance}} p95"
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "type": "timeseries",
+      "title": "브로커가 받는 요청 (초당, 세 대 합)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 56,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (request) (rate(kafka_requests_total[1m]))",
+          "legendFormat": "{{request}}"
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "type": "timeseries",
+      "title": "브로커별 발행 · 오프셋 커밋 (초당)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 64,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (instance, request) (rate(kafka_requests_total{request=~\"Produce|OffsetCommit\"}[1m]))",
+          "legendFormat": "{{instance}} {{request}}"
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "type": "timeseries",
+      "title": "복제 기다림 (브로커별, p95)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 64,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "kafka_request_time_ms{request=\"Produce\", part=\"Remote\", quantile=\"0.95\"}",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "type": "timeseries",
+      "title": "스레드 노는 비율 (I/O는 브로커 · 컨트롤러 합이라 최대 2)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 64,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "kafka_request_handler_idle_ratio",
+          "legendFormat": "{{instance}} I/O"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "kafka_network_processor_idle_ratio",
+          "legendFormat": "{{instance}} 네트워크"
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "type": "timeseries",
+      "title": "역할: 컨트롤러 · 그룹 코디네이터",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 64,
+        "w": 6,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "kafka_controller_active",
+          "legendFormat": "{{instance}} 컨트롤러"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "kafka_coordinator_groups",
+          "legendFormat": "{{instance}} 코디네이터 (맡은 그룹 수)"
+        }
+      ]
+    },
+    {
       "id": 19,
       "type": "row",
       "title": "JVM",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 55,
+        "y": 72,
         "w": 24,
         "h": 1
       },
@@ -1559,7 +2015,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 56,
+        "y": 73,
         "w": 8,
         "h": 8
       },
@@ -1619,7 +2075,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 56,
+        "y": 73,
         "w": 8,
         "h": 8
       },
@@ -1679,7 +2135,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 56,
+        "y": 73,
         "w": 8,
         "h": 8
       },
@@ -1727,7 +2183,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 64,
+        "y": 81,
         "w": 24,
         "h": 1
       },
@@ -1743,7 +2199,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 65,
+        "y": 82,
         "w": 8,
         "h": 8
       },
@@ -1794,7 +2250,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 65,
+        "y": 82,
         "w": 8,
         "h": 8
       },
@@ -1854,7 +2310,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 65,
+        "y": 82,
         "w": 8,
         "h": 8
       },
@@ -1902,7 +2358,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 73,
+        "y": 90,
         "w": 24,
         "h": 1
       },
@@ -1918,7 +2374,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 74,
+        "y": 91,
         "w": 8,
         "h": 8
       },
@@ -1978,7 +2434,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 74,
+        "y": 91,
         "w": 8,
         "h": 8
       },
@@ -2038,7 +2494,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 74,
+        "y": 91,
         "w": 8,
         "h": 8
       },
@@ -2086,7 +2542,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 82,
+        "y": 99,
         "w": 24,
         "h": 1
       },
@@ -2102,7 +2558,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 83,
+        "y": 100,
         "w": 8,
         "h": 8
       },
@@ -2155,7 +2611,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 83,
+        "y": 100,
         "w": 8,
         "h": 8
       },
@@ -2206,7 +2662,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 83,
+        "y": 100,
         "w": 8,
         "h": 8
       },
@@ -2257,7 +2713,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 91,
+        "y": 108,
         "w": 8,
         "h": 8
       },
@@ -2308,7 +2764,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 91,
+        "y": 108,
         "w": 8,
         "h": 8
       },
@@ -2377,7 +2833,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 91,
+        "y": 108,
         "w": 8,
         "h": 8
       },
