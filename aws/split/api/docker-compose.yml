@@ -11,6 +11,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://${DB_HOST:?set DB_HOST in .env}:3306/coupon
       SPRING_DATA_REDIS_HOST: ${REDIS_HOST:?set REDIS_HOST in .env}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA1_HOST:?set KAFKA1_HOST in .env}:9092,${KAFKA2_HOST:?set KAFKA2_HOST in .env}:9092,${KAFKA3_HOST:?set KAFKA3_HOST in .env}:9092
+      COUPON_KAFKA_PRODUCERS: ${KAFKA_PRODUCERS:-1}
     volumes:
       - ../../../coupon-api/build/libs/coupon-api-0.0.1.jar:/app.jar:ro
     restart: on-failure
