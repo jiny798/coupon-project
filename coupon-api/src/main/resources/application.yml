@@ -14,10 +14,13 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        max.in.flight.requests.per.connection: ${coupon.kafka.inflight}
 
 coupon:
   kafka:
     producers: 1
+    inflight: 5
 
 server:
   port: 8080
