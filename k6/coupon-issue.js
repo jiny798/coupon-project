@@ -1,10 +1,22 @@
 import http from 'k6/http';
 import exec from 'k6/execution';
 import { check, sleep } from 'k6';
+import { Counter } from 'k6/metrics';
 
 const BASE = __ENV.BASE || 'http://localhost:8080';
 const QUANTITY = Number(__ENV.QUANTITY || 100000);
 const RATE = Number(__ENV.RATE || 0);
+const SHAPE = __ENV.SHAPE || 'step';
+
+const issued = new Counter('issued');
+const rejected = new Counter('rejected');
+
+const shapes = {
+  step: [[60, 0.02], [60, 0.1], [120, 0.1], [60, 0.2], [60, 0.3], [60, 0.4],
+    [60, 0.5], [60, 0.6], [60, 0.7], [60, 0.8], [60, 1], [300, 1]],
+  hold: [[120, 1], [840, 1]],
+  spike: [[1, 1], [60, 1]],
+};
 
 const closedModel = {
   executor: 'ramping-vus',
@@ -25,10 +37,7 @@ const openModel = {
   timeUnit: '1s',
   preAllocatedVUs: RATE / 5,
   maxVUs: RATE * 2,
-  stages: [
-    [1, 0.02], [1, 0.1], [2, 0.1], [1, 0.2], [1, 0.3], [1, 0.4],
-    [1, 0.5], [1, 0.6], [1, 0.7], [1, 0.8], [1, 1], [5, 1],
-  ].map(([minutes, share]) => ({ duration: `${minutes * 60}s`, target: RATE * share })),
+  stages: shapes[SHAPE].map(([seconds, share]) => ({ duration: `${seconds}s`, target: RATE * share })),
 };
 
 export const options = {
@@ -65,4 +74,9 @@ export default function (data) {
   check(res, {
     'issue request success': (r) => [200, 202].includes(r.status),
   });
+  if (res.status === 202) {
+    issued.add(1);
+  } else if (res.status === 200) {
+    rejected.add(1);
+  }
 }
