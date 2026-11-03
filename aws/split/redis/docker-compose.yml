@@ -1,0 +1,19 @@
+name: coupon-redis
+
+services:
+  redis:
+    image: redis:7.0.15
+    ports:
+      - "6379:6379"
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.59.0
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: redis://redis:6379
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    ports:
+      - "9100:9100"

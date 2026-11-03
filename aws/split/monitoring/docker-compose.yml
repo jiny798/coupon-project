@@ -1,0 +1,34 @@
+name: coupon-monitoring
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      - "api1:${API1_HOST:?set API1_HOST in .env}"
+      - "api2:${API2_HOST:-127.0.0.1}"
+      - "lb:${LB_HOST:-127.0.0.1}"
+      - "consumer:${CONSUMER_HOST:?set CONSUMER_HOST in .env}"
+      - "redis:${REDIS_HOST:?set REDIS_HOST in .env}"
+      - "kafka1:${KAFKA1_HOST:?set KAFKA1_HOST in .env}"
+      - "kafka2:${KAFKA2_HOST:-127.0.0.1}"
+      - "kafka3:${KAFKA3_HOST:-127.0.0.1}"
+      - "db:${DB_HOST:?set DB_HOST in .env}"
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.7.0
+    command:
+      - "--kafka.server=${KAFKA1_HOST:?set KAFKA1_HOST in .env}:9092"
+    restart: always
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../../monitoring/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ../../../monitoring/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml:ro
+      - ../../../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro

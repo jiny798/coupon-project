@@ -1,0 +1,46 @@
+name: coupon-kafka
+
+services:
+  jmx-agent:
+    image: curlimages/curl:8.7.1
+    user: root
+    command: ["-fsSL", "-o", "/jmx/jmx_prometheus_javaagent.jar", "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar"]
+    volumes:
+      - jmx-agent:/jmx
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+      - "7071:7071"
+    volumes:
+      - jmx-agent:/opt/jmx-agent:ro
+      - ./jmx.yml:/opt/jmx-agent-config/kafka.yml:ro
+    depends_on:
+      jmx-agent:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_OPTS: "-javaagent:/opt/jmx-agent/jmx_prometheus_javaagent.jar=7071:/opt/jmx-agent-config/kafka.yml"
+      CLUSTER_ID: 9CTF7_MNTkWSAHfPMwWGcQ
+      KAFKA_NODE_ID: ${NODE_ID:?set NODE_ID in .env}
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: ${KAFKA_VOTERS:?set KAFKA_VOTERS in .env}
+      KAFKA_LISTENERS: BROKER://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: BROKER://${KAFKA_HOST:?set KAFKA_HOST in .env}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_DEFAULT_REPLICATION_FACTOR: ${REPLICATION:-1}
+      KAFKA_MIN_INSYNC_REPLICAS: ${MIN_INSYNC:-1}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${REPLICATION:-1}
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_HEAP_OPTS: "-Xms400m -Xmx400m"
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    ports:
+      - "9100:9100"
+
+volumes:
+  jmx-agent:

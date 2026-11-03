@@ -1,0 +1,25 @@
+upstream coupon_api {
+    server ${API1_HOST}:8080;
+    server ${API2_HOST}:8080;
+    keepalive 1024;
+    keepalive_requests 100000;
+}
+
+server {
+    listen 8080;
+
+    location / {
+        proxy_pass http://coupon_api;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+    }
+}
+
+server {
+    listen 8081;
+
+    location /stub_status {
+        stub_status;
+    }
+}

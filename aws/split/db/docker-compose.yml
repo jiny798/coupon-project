@@ -1,0 +1,27 @@
+name: coupon-db
+
+services:
+  mysql:
+    image: mysql:8.0.34
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: coupon
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    ports:
+      - "9104:9104"
+    command:
+      - "--mysqld.address=mysql:3306"
+      - "--mysqld.username=root:1234"
+      - "--collect.perf_schema.file_events"
+    restart: always
+    depends_on:
+      - mysql
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    ports:
+      - "9100:9100"

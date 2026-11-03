@@ -1,0 +1,51 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: coupon-api
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["api1:8082", "api2:8082"]
+
+  - job_name: coupon-consumer
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["consumer:8083"]
+
+  - job_name: mysql-exporter
+    static_configs:
+      - targets: ["db:9104"]
+
+  - job_name: db-node
+    static_configs:
+      - targets: ["db:9100"]
+
+  - job_name: nginx
+    static_configs:
+      - targets: ["lb:9113"]
+
+  - job_name: lb-node
+    static_configs:
+      - targets: ["lb:9100"]
+
+  - job_name: redis-exporter
+    static_configs:
+      - targets: ["redis:9121"]
+
+  - job_name: redis-node
+    static_configs:
+      - targets: ["redis:9100"]
+
+  - job_name: kafka-exporter
+    static_configs:
+      - targets: ["kafka-exporter:9308"]
+
+  - job_name: kafka-node
+    static_configs:
+      - targets: ["kafka1:9100", "kafka2:9100", "kafka3:9100"]
+
+  - job_name: kafka-jmx
+    static_configs:
+      - targets: ["kafka1:7071", "kafka2:7071", "kafka3:7071"]
